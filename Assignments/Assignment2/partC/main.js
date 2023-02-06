@@ -1,132 +1,66 @@
 (function(){
-    let hand_count = 5;
+    const HAND_COUNT = 5;
 
+    //Fetch shuffled cards
     fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1')
     .then(response => response.json())
     .then(function(data){
-         fetch('https://deckofcardsapi.com/api/deck/'+data.deck_id+'/draw/?count='+hand_count)
+        //Grab 5 cards from shuffled
+        fetch('https://deckofcardsapi.com/api/deck/'+data.deck_id+'/draw/?count='+hand_count)
         .then(response => response.json())
         .then(data => {
-        showHands(data.cards);
-        let sorted_hand = orderCards(data.cards);
-        checkHand(sorted_hand);
+        showHands(data.cards);//display cards
+        check_hand(sorted_hand);//show hand value
+        })
     })
-    })
 
+    //function to determine value of hand
+    function check_hand(hand){
+        //check if hand is flush
+        let isFlush = checkForFlush(hand);
+        //convert face to numbers and return a sorted hand 
+        let sortedHand = orderCards(hand);
+        //check if hand is a straight
+        let isStraight = checkForStraight(sortedHand);
+        //count number of duplicate values
+        let dupeCount = countDuplicateValues(sortedHand);
+        //count number of pairs are in hand
+        let pairCount = countPairs(sortedHand);
+        
+        let outputHtml = "<h1>"
 
-    function isFlush(hand){
-        let sameSuit = true;
-        for (let i = 1; i < hand_count; i++) {
-            if (hand[i-1][1]!== hand[i][1]){
-                sameSuit = false;
-            }
-        }
-        return sameSuit;
-    }
-
-    function isStraight(hand){
-        let straight = true;
-        for (let i = 1; i < hand_count; i++) {        
-            if(hand[i-1][0]!== hand[i][0]-1){
-                straight = false;
-            }
-        }
-        return straight;
-    }
-
-    function countPairs(hand){
-        let sameCount = 0;
-        let tempNum;
-        let tempCount = 0;
-        for (let i = 0; i < hand_count; i++) {
-            tempNum = hand[i][0];
-            for (let j = 0; j < hand_count; j++) {
-                if (hand[j][0]===tempNum){
-                    tempCount++;
-                }
-            }
-            if (tempCount > sameCount){
-                sameCount = tempCount;
-            }
-            tempCount = 0;
-
-        }
-        return sameCount;
-    }
-
-    function countSuit(hand){
-        let suit = []
-        for (let i = 0; i < hand_count; i++) {
-            suit[i] = hand[i][0];
-        }
-        suit.sort()
-
-        let tempCount = 0;
-        for (let i = 1; i <= hand_count; i++) {
-            if (suit[i-1]!==suit[i]){
-                tempCount++;
-            }
-        }
-
-        return tempCount;
-    }
-
-    function checkHand(hand){
-        let suitCount = countSuit(hand);
-        let isFlush1 = isFlush(hand);
-        let isStraight1 = isStraight(hand);
-        let count = countPairs(hand);
-        if (isFlush1 && isStraight1){
-            //IF A - 10 same suit:: ROYAL FLUSH
-            if (hand[0][0]===10){
-                console.log("ROYAL FLUSH")
-            }else{//IF 5 sequential same suit:: STRAIGHT FLUSH
-                console.log("STRAIGHT FLUSH")
-            }
-        }else if(count === 4){
-            console.log("FOUR OF A KIND");//IF 4 same numbers:: FOUR OF A KIND
-        }else if (suitCount===2){
-            console.log("FULL HOUSE");
-        }//IF 3 same & 2 same:: FULL HOUSE
-        else if(isFlush1){
-            console.log("FLUSH");//IF 5 same suit:: FLUSH
-        }else if (isStraight1){
-            console.log("STRAIGHT")//IF 5 sequential:: STRAIGHT
-        }else if (count === 3){
-            console.log("THREE OF A KIND")//IF 3 same num:: THREE OF A KIND
-        }else if(suitCount===3){
-            console.log("TWO PAIR");//IF 2 same name & 2 same num:: TWO PAIR
-        }else if(count===2){
-            console.log("PAIR");//IF 2 same:: PAIR
+        if (checkRoyalFlush(sortedHand)){
+            outputHtml += "ROYAL FLUSH"
+        }else if (isFlush && isStraight){
+            outputHtml += "STRAIGHT FLUSH"
+        }else if (dupeCount === 4){//4 equal cards
+            outputHtml += "FOUR OF A KIND"
+        }else if (pairCount === 2){//if theres not 4 equal and the count of pairs is 2
+            outputHtml += "FULL HOUSE"
+        }else if (isFlush){
+            outputHtml += "FLUSH"
+        }else if (isStraight){
+            outputHtml += "STRAIGHT"
+        }else if(dupeCount === 3){//3 equals
+            outputHtml += "THREE OF A KIND"
+        }else if (pairCount === 3){//if theres not 3 equal and the count is 3
+            outputHtml += "TWO PAIR"
+        }else if (dupeCount === 2){
+            outputHtml += "PAIR"
         }else{
-            console.log("HIGH CARD: " + hand[hand_count-1][hand_count-1])//Find highest card::HIGH CARD
+            outputHtml += "HIGH CARD"
         }
+        outputHtml += "</h1>"
+        document.write(outputHtml);//show hand type in DOM
     }
 
-    function showHands(hand){
-        var outputHtml = "<table>";
-        outputHtml += "<tr>"
-        hand.forEach(element => {
-            outputHtml += "<th>" + element.value + " of " + element.suit 
-            outputHtml += "</th>"
-        });
-        outputHtml += "</tr>"
-        outputHtml += "<tr>"
-        hand.forEach(element => {
-            outputHtml += "<td><img src=\"" + element.image + "\"";
-            outputHtml += "</td>"
-        });
-        outputHtml += "</tr>"
-        outputHtml += "</table>";
-        document.write(outputHtml)
-    }
-
+    //function to assign face vards value and return a sorted hand
     function orderCards(hand){
-
         let sorted_hand = []
-
-        for (let i = 0; i < hand_count; i++) {
+        //Loop through each card
+        for (let i = 0; i < HAND_COUNT; i++) {
             let value;
+            //Switch over the value and assign numbers to the face cards
             switch(hand[i].value){
                 case "JACK":
                     value = 11;
@@ -138,24 +72,110 @@
                     value = 13;
                     break;
                 case "ACE":
-                    value = 14;
+                    value = 1;
                     break;
-                default:
+                default://if not face, convert value int
                     value = parseInt(hand[i].value);
                     break;
             }  
-            sorted_hand.push([value,hand[i].suit]);
+            //push each value into new array
+            sorted_hand.push(value);
         }
-
-        sorted_hand.sort(function(a,b){//https://stackoverflow.com/questions/16096872/how-to-sort-2-dimensional-array-by-column-value
-            if (a[0] === b[0]) {
-                return 0;
-            }
-            else {
-                return (a[0] < b[0]) ? -1 : 1;
-            }
-        })
+        //sort the array from lowest to highest value
+        sorted_hand.sort(function(a,b){return a - b})//SOURCE: https://stackoverflow.com/questions/7000851/how-to-sort-numbers-correctly-with-array-sort
 
         return sorted_hand;
     }
+
+    //Funtion to check for royal flush as ACE is coded to being value of 1
+    function checkRoyalFlush(hand){
+        let isRoyal = false;
+        //Check that the hand contains all values of royal flush
+        if (hand.includes(10) && hand.includes(11) && hand.includes(12) && hand.includes(13) && hand.includes(1)){
+            isRoyal = true
+        }
+        return isRoyal;
+    }
+
+    //function to count number of pairs (IE will return 3 if hand is two pair, 
+    //will return 2 if hand is full house)
+    function countPairs(hand){
+        let count = 0;
+        //Loop through each card 
+        for (let i = 1; i <= HAND_COUNT; i++) {
+            //increment count when a card changes value
+            if (hand[i-1]!==hand[i]){
+                count++;
+            }
+        }
+        return count;
+    }
+
+    //function for counting how many cards have the same value (returns the highest streak)
+    function countDuplicateValues(hand){
+        let sameCount = 0;
+        let tempCount = 0;
+        //Loop through each card in hand
+        for (let i = 0; i < HAND_COUNT; i++) {
+            let tempNum = hand[i];
+            //loop through the rest of the cards for each card
+            for (let j = 0; j < HAND_COUNT; j++) {
+                //Check their value against current outer card
+                if (hand[j]===tempNum){
+                    tempCount++;
+                }
+            }
+            //Check if the current count is greater than the last
+            if (tempCount > sameCount){
+                sameCount = tempCount;
+            }
+            tempCount = 0;
+        }
+        return sameCount;
+    }
+
+    //Check that hand is straight
+    function checkForStraight(hand){
+        let straight = true;
+        //hand parameter will be sorted from lowest to highest
+        for (let i = 1; i < HAND_COUNT; i++) {   
+            //Loop each card and make sure that the next card is one higher in value     
+            if(hand[i-1]!== hand[i]-1){
+                straight = false;
+            }
+        }
+        return straight;
+    }
+
+    //Check that all suits are the same 
+    function checkForFlush(hand){
+        let sameSuit = true;
+        //Loop through each card and check that the last cards suit is the same as the current card
+        for (let i = 1; i < HAND_COUNT; i++) {
+            if (hand[i-1].suit!== hand[i].suit){
+                sameSuit = false;
+            }
+        }
+        return sameSuit;
+    }
+
+    //function to display cards in DOM
+    function showHands(hand){
+        var outputHtml = "<table>";
+        outputHtml += "<tr>"
+        hand.forEach(element => {//Display the name and suit in first row
+            outputHtml += "<th>" + element.value + " of " + element.suit 
+            outputHtml += "</th>"
+        });
+        outputHtml += "</tr>"
+        outputHtml += "<tr>"
+        hand.forEach(element => {//Display the image of card in second row
+            outputHtml += "<td><img src=\"" + element.image + "\"";
+            outputHtml += "</td>"
+        });
+        outputHtml += "</tr>"
+        outputHtml += "</table>";
+        document.write(outputHtml)//Write html to document
+    }
+
 })()
