@@ -15,10 +15,10 @@
 
 
     function isFlush(hand){
-        let sameSuit = false;
+        let sameSuit = true;
         for (let i = 1; i < hand_count; i++) {
-            if (hand[i-1][1]=== hand[i][1]){
-                sameSuit = true;
+            if (hand[i-1][1]!== hand[i][1]){
+                sameSuit = false;
             }
         }
         return sameSuit;
@@ -55,16 +55,24 @@
     }
 
     function countSuit(hand){
-        //if there are only two suits then it is full out
-        //if there are three suits then two pair
-        let suitCount = 4;
-        hand.forEach(element => {
-            
-        });
-      }
+        let suit = []
+        for (let i = 0; i < hand_count; i++) {
+            suit[i] = hand[i][0];
+        }
+        suit.sort()
 
+        let tempCount = 0;
+        for (let i = 1; i <= hand_count; i++) {
+            if (suit[i-1]!==suit[i]){
+                tempCount++;
+            }
+        }
+
+        return tempCount;
+    }
 
     function checkHand(hand){
+        let suitCount = countSuit(hand);
         let isFlush1 = isFlush(hand);
         let isStraight1 = isStraight(hand);
         let count = countPairs(hand);
@@ -77,23 +85,23 @@
             }
         }else if(count === 4){
             console.log("FOUR OF A KIND");//IF 4 same numbers:: FOUR OF A KIND
-        }else if(){
-            //IF 3 same & 2 same:: FULL HOUSE
-        }else if(isFlush1){
+        }else if (suitCount===2){
+            console.log("FULL HOUSE");
+        }//IF 3 same & 2 same:: FULL HOUSE
+        else if(isFlush1){
             console.log("FLUSH");//IF 5 same suit:: FLUSH
         }else if (isStraight1){
             console.log("STRAIGHT")//IF 5 sequential:: STRAIGHT
         }else if (count === 3){
             console.log("THREE OF A KIND")//IF 3 same num:: THREE OF A KIND
-        }else if (){
-            //IF 2 same name & 2 same num:: TWO PAIR
+        }else if(suitCount===3){
+            console.log("TWO PAIR");//IF 2 same name & 2 same num:: TWO PAIR
         }else if(count===2){
             console.log("PAIR");//IF 2 same:: PAIR
         }else{
-            console.log("HIGH CARD: " + hand[hand_count][hand_count])//Find highest card::HIGH CARD
+            console.log("HIGH CARD: " + hand[hand_count-1][hand_count-1])//Find highest card::HIGH CARD
         }
     }
-
 
     function showHands(hand){
         var outputHtml = "<table>";
