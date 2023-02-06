@@ -1,17 +1,18 @@
 (function(){
+
     const HAND_COUNT = 5;
 
     //Fetch shuffled cards
-    fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1')
-    .then(response => response.json())
-    .then(function(data){
-        //Grab 5 cards from shuffled
-        fetch('https://deckofcardsapi.com/api/deck/'+data.deck_id+'/draw/?count='+hand_count)
-        .then(response => response.json())
-        .then(data => {
+     fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1')
+     .then(response => response.json())
+     .then(function(data){
+         //Grab 5 cards from shuffled
+         fetch('https://deckofcardsapi.com/api/deck/'+data.deck_id+'/draw/?count='+HAND_COUNT)
+         .then(response => response.json())
+         .then(data => {
         showHands(data.cards);//display cards
-        check_hand(sorted_hand);//show hand value
-        })
+         check_hand(data.cards);//show hand value
+         })
     })
 
     //function to determine value of hand
@@ -29,7 +30,7 @@
         
         let outputHtml = "<h1>"
 
-        if (checkRoyalFlush(sortedHand)){
+        if (checkRoyalFlush(sortedHand) && isFlush){
             outputHtml += "ROYAL FLUSH"
         }else if (isFlush && isStraight){
             outputHtml += "STRAIGHT FLUSH"
