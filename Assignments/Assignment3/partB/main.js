@@ -12,6 +12,7 @@
     .then((response) => response.json())
     .then((json) => {
 
+        console.log(json._embedded.episodes[1].airdate)
         //DO NOT MODIFY THE CODE IN HERE...check the console for your functions' output
 
         //1 - Create a function called getGuntherCount() which returns the total number of episodes 
@@ -57,8 +58,8 @@
 
         //9 - Create a function called getEpisodeTallyBySeason that returns an object containing the season name and the total episodes as key:value pairs for each season
         console.log('--------------------------------');
-        console.log(`Tally of episodes by season:`);
-        console.log(getEpisodeTallyBySeason(json));
+        //console.log(`Tally of episodes by season:`);
+        //console.log(getEpisodeTallyBySeason(json));
 
         //10 - Create a funtion called capitalizeTheFriends that transforms the episode JSON data by capitalizing the words Joey, Chandler, Monica, Rachel, Phoebe, and Ross in both 
         //the name and summary of the episodes.
@@ -73,5 +74,105 @@
 
 	// Define the required ten functions below this line...
 
-})();
+    const getGuntherCount = (json) => {
+
+        return json._embedded.episodes.reduce((total,episode)=>{
+            if (episode.summary.includes("Gunther")){
+                total++;
+            }
+            return total;
+        },0)
+    }
+
+    const getTotalRuntimeMinutes = (json) => {
+        return json._embedded.episodes.reduce((total,episode)=>{
+            total += episode.runtime
+            return total
+        },0)
+    }
+
+    const getTotalEpisodesInYear = (json, year) => {
+        return json._embedded.episodes.reduce((total,episode)=>{
+            if (episode.airdate.includes(year)){
+                total++;
+            }
+            return total;
+        },0)
+    }
+
+    const getFemaleCastMembers = (json) => {
+        let names = []
+        json._embedded.cast.filter((member) => {
+            if (member.person.gender === "Female"){
+                names.push(member.person.name) 
+            }
+        })            
+        return names;
+    }
+
+    const getEpisodeTitles = (json, word) => {
+        let titles = []
+        json._embedded.episodes.filter((episode)=>{
+            if (episode.summary.includes(word)){
+                titles.push(episode.name)
+            }
+        })
+        return titles;
+    }
+
+    const getCastMembersOver55 = (json) => {
+        let members = []
+        json._embedded.cast.filter((member)=>{
+            let ageDiff = Date.now() - Date.parse(member.person.birthday) 
+            if ((ageDiff / 3.15576e+10) >= 55){ //SOURCE FOR DIVISION NUM: https://stackoverflow.com/questions/4060004/calculate-age-given-the-birth-date-in-the-format-yyyymmdd
+                members.push(member.person.name)
+            }
+        })
+        return members;
+    }
+
+    const getTotalRuntimeMinutesExcludingSeasonSix = (json) => {
+        return json._embedded.episodes.filter((episode)=>
+            episode.season != 6
+        )
+        .reduce((total,episode)=>{
+            total += episode.runtime
+            return total
+        },0)
+    }
+
+    const getFirstFourSeasons = (json) => {
+        let episodes = []
+        json._embedded.episodes.filter((episode)=>{
+            if (episode.season <= 4){
+                episodes.push({"Season": episode.season,
+                "Name" : episode.name})
+            }
+        })
+        return episodes;
+    }
+
+    // const getEpisodeTallyBySeason = (json) => {
+
+        
+
+    //     return json._embedded.episodes.map((episode) => {
+    //         return {
+    //             season: episode.season,
+    //             episodes : 
+    //         }
+    //     })
+    // }
+
+    const capitalizeTheFriends = (json) => {
+        let names = ["joey", "chandler", "monica", "rachel", "phoebe", "ross"]
+        let names2 = ["Joey", "Chandler", "Monica", "Rachel", "Phoebe", "Ross"]
+
+        return json._embedded.episodes.map((episode) => {
+            episode.summary.replaceAll(names,names2)
+            episode.name.replaceAll(names,names2)
+        })
+    }
+
+})()
 
