@@ -58,8 +58,8 @@
 
         //9 - Create a function called getEpisodeTallyBySeason that returns an object containing the season name and the total episodes as key:value pairs for each season
         console.log('--------------------------------');
-        //console.log(`Tally of episodes by season:`);
-        //console.log(getEpisodeTallyBySeason(json));
+        console.log(`Tally of episodes by season:`);
+        console.log(getEpisodeTallyBySeason(json));
 
         //10 - Create a funtion called capitalizeTheFriends that transforms the episode JSON data by capitalizing the words Joey, Chandler, Monica, Rachel, Phoebe, and Ross in both 
         //the name and summary of the episodes.
@@ -152,26 +152,20 @@
         return episodes;
     }
 
-    // const getEpisodeTallyBySeason = (json) => {
-
-        
-
-    //     return json._embedded.episodes.map((episode) => {
-    //         return {
-    //             season: episode.season,
-    //             episodes : 
-    //         }
-    //     })
-    // }
+     const getEpisodeTallyBySeason = (json) => {
+        return json._embedded.episodes.reduce((total, episode) => {
+            return total[episode.season] ? ++total[episode.season] : total[episode.season] = 1, total
+        }, {});//SOURCE: https://stackoverflow.com/questions/5667888/counting-the-occurrences-frequency-of-array-elements
+    }
 
     const capitalizeTheFriends = (json) => {
-        let names = ["joey", "chandler", "monica", "rachel", "phoebe", "ross"]
-        let names2 = ["Joey", "Chandler", "Monica", "Rachel", "Phoebe", "Ross"]
+        let regex = /joey|chandler|monica|rachel|phoebe|ross/ig
 
-        return json._embedded.episodes.map((episode) => {
-            episode.summary.replaceAll(names,names2)
-            episode.name.replaceAll(names,names2)
-        })
+        return json._embedded.episodes.map(episode => {
+            episode.name = episode.name.replace(regex, (replacement) => replacement.toUpperCase());
+            episode.summary = episode.summary.replace(regex, (replacement) => replacement.toUpperCase());
+            return episode;
+        });
     }
 
 })()
