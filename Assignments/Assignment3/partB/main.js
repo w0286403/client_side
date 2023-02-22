@@ -145,8 +145,10 @@
         let episodes = []
         json._embedded.episodes.filter((episode)=>{
             if (episode.season <= 4){
-                episodes.push({"Season": episode.season,
-                "Name" : episode.name})
+                episodes.push({
+                    "Season": episode.season,
+                    "Name" : episode.name
+                })
             }
         })
         return episodes;
@@ -169,4 +171,3 @@
     }
 
 })()
-
