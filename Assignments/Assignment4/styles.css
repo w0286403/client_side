@@ -1,0 +1,26 @@
+table {
+    width: 40%;
+    margin:auto;
+    stroke:4px solid #000000;
+    float: left;
+   }
+
+td {
+    width:3em;
+    height: 4em;
+    position:relative;
+    margin:50;
+    outline:1px solid #000000;
+}
+
+.stateZero {
+    background-color: antiquewhite;
+}
+
+.stateOne {
+    background-color: aquamarine;
+}
+
+.stateTwo {
+    background-color: blueviolet;
+}
