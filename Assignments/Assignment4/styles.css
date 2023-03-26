@@ -1,8 +1,10 @@
 table {
-    width: 40%;
+    width: 100%;
     margin:auto;
     stroke:4px solid #000000;
     float: left;
+    display: block;
+    
    }
 
 td {
@@ -23,4 +25,8 @@ td {
 
 .stateTwo {
     background-color: blueviolet;
+}
+
+.btn {
+    margin: 0.2em;
 }

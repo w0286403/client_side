@@ -1,45 +1,47 @@
 (function(){
-    let state0 = "stateZero"
-    let state1 = "stateOne"
-    let state2 = "stateTwo"
-    let toggle = "canToggle"
-    let cellCount = 0
+    const state0 = "stateZero";
+    const state1 = "stateOne";
+    const state2 = "stateTwo";
+    const toggle = "canToggle";
+    let apiData;
+    let cellCount = 0;
+    let timer;
 
     const loadApi = async () =>{
-        return fetch("https://prog2700.onrender.com/threeinarow/sample")
+        return await fetch("https://prog2700.onrender.com/threeinarow/random")
         .then((response)=> response.json())
-        .then((data)=>data.rows)
+        .then((data)=>data.rows);
     } 
 
     const createTable = (data) => {
-        const target = $("#theGame")
-        const table = document.createElement("table")
-        table.classList.add("gameTable")
+        const target = $("#theGame");
+        const table = document.createElement("table");
+        table.classList.add("gameTable");
         data.forEach((rows) => {
             cellCount++;
             const row = document.createElement("tr")
-            for (let i = 0; i < rows.length; i++) {
+            rows.forEach(element => {
                 const col = document.createElement("td")
-                if (rows[i].currentState === 0){
+                if (element.currentState === 0){
                     col.classList.add(state0)
                     col.classList.add(toggle)
-                }else if(rows[i].currentState === 1){
+                }else if(element.currentState === 1){
                     col.classList.add(state1)
                 }else {
                     col.classList.add(state2)
                 }
                 col.addEventListener("click", () => {
                     onClick(col)
-                })
+                });
                 row.appendChild(col)
-            }
+            });
             table.appendChild(row)
         });
 
         target.append(table)
-    }
+    };
 
-    let createButtons = (data) => {
+    const createButtons = (data) => {
         let target = $("body")
         const btn = document.createElement("button")
         btn.classList.add("btn")
@@ -69,32 +71,10 @@
         label.textContent = "Check Errors"
         target.append(label)
 
-    }
+        const timer = document.createElement("h1")
+        timer.classList.add("timer")
+        target.append(timer);
 
-    const onChecked = (event,data) => {
-        const table = document.getElementsByClassName("gameTable")[0];
-        for (let i = 0; i < cellCount; i++) {
-            const row = table.rows[i];
-            for (let j = 0; j < cellCount; j++) {
-                const cell = row.cells[j]; 
-                cell.style.outline = "";
-            }
-        }
-        if (event.target.checked){
-           
-                for (let i = 0; i < cellCount; i++) {
-                    const row = table.rows[i];
-                    for (let j = 0; j < cellCount; j++) {
-                        const cell = row.cells[j];
-                        if (cell.classList.contains(state0) ||
-                            cell.classList.contains(state1) && data[i][j].correctState != 1 ||
-                            cell.classList.contains(state2) && data[i][j].correctState != 2){
-                            cell.style.outline = "2px solid red";
-                        }
-                    }
-                }
-            
-        }
     }
 
     const isCorrect = (data) => {
@@ -111,6 +91,7 @@
                 }
             }
         }
+        return true;
     }
 
     const checkForThreeInRow = () => {
@@ -199,10 +180,11 @@
         }
     }
 
-    let btn_click = (data) => {
+    const btn_click = (data) => {
         let text = ""
         if (isCorrect(data)){
             text = "You Got It!"
+            clearInterval(timer);
         }else{
             if (checkColorCount() && checkForThreeInRow()){
                 text = "So Far So Good"
@@ -216,11 +198,75 @@
         label.textContent = text    
     }
 
-    const run = async ()=>{
-        let data = await loadApi();
-        console.log(data);
-        createTable(data);
-        createButtons(data);
+    const onChecked = (event,data) => {
+        const table = document.getElementsByClassName("gameTable")[0];
+        for (let i = 0; i < cellCount; i++) {
+            const row = table.rows[i];
+            for (let j = 0; j < cellCount; j++) {
+                const cell = row.cells[j]; 
+                cell.style.outline = "";
+            }
+        }
+        if (event.target.checked){
+           
+                for (let i = 0; i < cellCount; i++) {
+                    const row = table.rows[i];
+                    for (let j = 0; j < cellCount; j++) {
+                        const cell = row.cells[j];
+                        if (cell.classList.contains(state0) ||
+                            cell.classList.contains(state1) && data[i][j].correctState != 1 ||
+                            cell.classList.contains(state2) && data[i][j].correctState != 2){
+                            cell.style.outline = "2px solid red";
+                        }
+                    }
+                }
+            
+        }
+    }
+
+    const startTime = () =>{
+        const label = document.getElementsByClassName("timer")[0]
+        let minutes = 5;
+        let seconds = 0;
+        label.textContent = "0" + minutes + ":0" + seconds;
+        timer = setInterval(() => {
+            seconds--;
+            if (seconds === -1){
+                minutes--;
+                seconds = 59;
+            }
+            if (seconds < 10){
+                label.textContent = "0" + minutes + ":0" + seconds;
+
+            }else{
+                label.textContent = "0" + minutes + ":" + seconds;
+
+            }
+            if (minutes <= 0 && seconds <= 0){
+                failed();
+                clearInterval(timer);
+            }
+        }, 1000);   
+    }
+    
+    const failed = () => {
+        let target = $("body")
+        target.empty()
+        const btn = document.createElement("button")
+        btn.classList.add("btn")
+        btn.textContent = "Try Again?"
+        btn.addEventListener("click",()=>{
+            target.empty()
+            location.reload()
+        })
+        target.append(btn)
+    }
+
+    const run = async () => {
+        apiData = await loadApi();
+        createTable(apiData);
+        createButtons(apiData);
+        startTime();
     }
 
     run()
