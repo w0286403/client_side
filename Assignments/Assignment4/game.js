@@ -81,7 +81,6 @@
         const timer = document.createElement("h1")
         timer.classList.add("timer")
         target.append(timer);
-
     }
 
     //Function to check if puzzle is correct
@@ -208,7 +207,6 @@
                 text = "So Far So Good"
             }else{
                 text = "Something Is Wrong..."
-
             }
         }
         //print status
